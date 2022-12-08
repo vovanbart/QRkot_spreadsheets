@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from pydantic import PositiveInt
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud.charity_project import charityproject_crud
+from app.crud.charity_project import charity_project_crud
 from app.models import CharityProject
 
 PROJECT_NOT_FOUND_ERROR = 'Данный проект не найден!'
@@ -23,7 +23,7 @@ async def check_charity_project_exists(
     project_id: int,
     session: AsyncSession,
 ) -> CharityProject:
-    charity_project = await charityproject_crud.get_charity_project(
+    charity_project = await charity_project_crud.get_charity_project(
         object_id=project_id, session=session
     )
     if not charity_project:
@@ -39,7 +39,7 @@ async def check_name_duplicate(
     session: AsyncSession
 ) -> None:
     charity_project_id = await (
-        charityproject_crud.get_charity_project_id_by_name(
+        charity_project_crud.get_charity_project_id_by_name(
             project_name=project_name, session=session
         )
     )
@@ -55,7 +55,7 @@ async def check_project_was_closed(
     session: AsyncSession
 ):
     project_close_date = await (
-        charityproject_crud.get_charity_project_close_date(
+        charity_project_crud.get_charity_project_close_date(
             project_id, session
         )
     )
@@ -71,7 +71,7 @@ async def check_project_was_invested(
     session: AsyncSession
 ):
     invested_project = await (
-        charityproject_crud.get_charity_project_invested_amount(
+        charity_project_crud.get_charity_project_invested_amount(
             project_id, session
         )
     )
@@ -88,7 +88,7 @@ async def check_correct_full_amount_for_update(
     full_amount_to_update: PositiveInt
 ):
     db_project_invested_amount = await (
-        charityproject_crud.get_charity_project_invested_amount(
+        charity_project_crud.get_charity_project_invested_amount(
             project_id, session
         )
     )

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict
 
 from pydantic import BaseModel, Extra, Field, PositiveInt
 
@@ -32,3 +32,10 @@ class CharityProjectDB(CharityProjectCreate):
 
     class Config:
         orm_mode = True
+
+
+class CharityProjectGoogle(BaseModel):
+    projects: List[Dict[str, str]] = Field(..., title='Закрытые проекты')
+
+    class Config:
+        extra = Extra.forbid

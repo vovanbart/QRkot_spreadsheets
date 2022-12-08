@@ -93,5 +93,4 @@ class CRUDCharityProject(
         await session.commit()
         return db_object
 
-
-charityproject_crud = CRUDCharityProject(CharityProject)
+charity_project_crud = CRUDCharityProject(CharityProject)

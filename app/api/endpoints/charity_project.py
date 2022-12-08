@@ -9,7 +9,7 @@ from app.api.validators import (check_charity_project_exists,
                                 check_project_was_invested)
 from app.core.db import get_async_session
 from app.core.user import current_superuser
-from app.crud.charity_project import charityproject_crud
+from app.crud.charity_project import charity_project_crud
 from app.schemas.charity_project import (CharityProjectCreate,
                                          CharityProjectDB,
                                          CharityProjectUpdate)
@@ -29,7 +29,7 @@ async def get_all_charity_projects(
     """Get all the charity projects.
         Endpoint is available for all users.
     """
-    charity_projects = await charityproject_crud.get_multiple(session)
+    charity_projects = await charity_project_crud.get_multiple(session)
     return charity_projects
 
 
@@ -49,7 +49,7 @@ async def create_new_charity_project(
     await check_name_duplicate(
         charity_project.name, session
     )
-    new_charity_project = await charityproject_crud.create(
+    new_charity_project = await charity_project_crud.create(
         charity_project, session
     )
     await execute_investment_process(
@@ -91,7 +91,7 @@ async def partially_update_charity_project(
             object_is_in.name, session
         )
 
-    is_charity_project = await charityproject_crud.update(
+    is_charity_project = await charity_project_crud.update(
         is_charity_project, object_is_in, session
     )
     return is_charity_project
@@ -115,7 +115,7 @@ async def delete_charity_project(
     )
     await check_project_was_invested(project_id, session)
     charity_project = await (
-        charityproject_crud.remove(
+        charity_project_crud.remove(
             charity_project, session
         )
     )
