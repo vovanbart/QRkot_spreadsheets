@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import select
+from sqlalchemy import select, extract
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import CRUDBase
@@ -65,6 +65,26 @@ class CRUDCharityProject(
             )
         )
         return project_invested_amount.scalars().first()
+    
+    async def get_projects_by_completion_rate(
+        self,
+        session: AsyncSession()
+    ):
+        '''Возвращает все завершённые проекты.'''
+        projects = await session.execute(
+            select(CharityProject).where(
+                CharityProject.fully_invested
+            ).order_by(
+                extract('year', self.model.close_date) -
+                extract('year', self.model.create_date),
+                extract('month', self.model.close_date) -
+                extract('month', self.model.create_date),
+                extract('day', self.model.close_date) -
+                extract('day', self.model.create_date)
+            )
+        )
+        projects = projects.all()
+        return projects
 
     async def update(
         self,

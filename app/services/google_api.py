@@ -5,9 +5,14 @@ from aiogoogle import Aiogoogle
 
 from app.core.config import settings
 from app.schemas.charity_project import CharityProjectDB
+from app.services.constants import FORMAT, LOCALE
 
 
-FORMAT = "%Y/%m/%d %H:%M:%S"
+class Google:
+    DRIVE_SERVICE = 'drive'
+    DRIVE_SERVICE_VERSION = 'v3'
+    SHEETS_SERVICE = 'sheets'
+    SHEETS_SERVICE_VERSION = 'v4'
 
 
 async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
@@ -17,7 +22,7 @@ async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
     spreadsheet_body = {
         'properties': {
             'title': f'Отчет на {now_date_time}',
-            'locale': 'ru_RU'
+            'locale': LOCALE
         },
         'sheets': [{'properties': {
             'sheetType': 'GRID',
@@ -30,35 +35,36 @@ async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
     response = await wrapper_services.as_service_account(
         service.spreadsheets.create(json=spreadsheet_body)
     )
-    spreadsheetid = response['spreadsheetId']
-    return spreadsheetid  # noqa
+    spreadsheet_id = response['spreadsheetId']
+    return spreadsheet_id  # noqa
 
 
 async def set_user_permissions(
-        spreadsheetid: str,
+        spreadsheet_id: str,
         wrapper_services: Aiogoogle
 ) -> None:
     '''Выдаёт права личному аккаунту к документам созданным с сервисного аккаунта.'''
     permissions_body = {'type': 'user',
                         'role': 'writer',
                         'emailAddress': settings.email}
-    service = await wrapper_services.discover('drive', 'v3')
+    service = await wrapper_services.discover(Google.DRIVE_SERVICE,
+                                              Google.DRIVE_SERVICE_VERSION)
     await wrapper_services.as_service_account(
         service.permissions.create(
-            fileId=spreadsheetid,
+            fileId=spreadsheet_id,
             json=permissions_body,
-            fields="id"
+            fields='id'
         ))
 
 
 async def spreadsheets_update_value(
-    spreadsheetid: str,
+    spreadsheet_id: str,
     projects: List[CharityProjectDB],
     wrapper_services: Aiogoogle
 ):
     '''Обновляет данные в гугл-таблице.'''
     now_date_time = datetime.now().strftime(FORMAT)
-    service = await wrapper_services.discover('sheets', 'v4')
+    service = await wrapper_services.discover(Google.SHEETS_SERVICE, Google.SHEETS_SERVICE_VERSION)
     table_values = [
         ['Отчет от', now_date_time],
         ['Топ проектов по скорости закрытия'],
@@ -79,7 +85,7 @@ async def spreadsheets_update_value(
     }
     await wrapper_services.as_service_account(
         service.spreadsheets.values.update(
-            spreadsheetId=spreadsheetid,
+            spreadsheetId=spreadsheet_id,
             range=f'A1:C{len(table_values)}',
             valueInputOption='USER_ENTERED',
             json=update_body
